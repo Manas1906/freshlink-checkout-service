@@ -39,6 +39,7 @@ public class CheckoutService {
 
         CheckoutOrder order = CheckoutOrder.builder()
                 .customerEmail(cart.customerEmail)
+                .cartId(req.getCartId())
                 .totalAmount(subtotal)
                 .taxAmount(tax)
                 .deliveryFee(deliveryFee)

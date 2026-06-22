@@ -7,6 +7,7 @@ import com.freshlink.checkout.model.*;
 import com.freshlink.checkout.repository.CartItemRepository;
 import com.freshlink.checkout.repository.CheckoutOrderRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,13 +16,16 @@ import java.util.List;
 public class CheckoutService {
 
     private final CheckoutOrderRepository repo;
+    private final CartItemRepository cartItemRepo;
     private final CartClient cartClient;
 
-    public CheckoutService(CheckoutOrderRepository repo, CartClient cartClient) {
+    public CheckoutService(CheckoutOrderRepository repo, CartItemRepository cartItemRepo, CartClient cartClient) {
         this.repo = repo;
+        this.cartItemRepo = cartItemRepo;
         this.cartClient = cartClient;
     }
 
+    @Transactional
     public CheckoutOrder checkout(String token, CheckoutRequest req) {
 
         CartResponse cart = cartClient.myCart(token);
@@ -48,6 +52,27 @@ public class CheckoutService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        return repo.save(order);
+        CheckoutOrder savedOrder = repo.save(order);
+
+        // Snapshot cart items locally in checkout service database
+        for (var item : cart.items) {
+            CartItem checkoutItem = new CartItem();
+            checkoutItem.setCheckoutId(savedOrder.getId());
+            checkoutItem.setProductId(item.productId);
+            checkoutItem.setProductName(item.productName);
+            checkoutItem.setPrice(item.price);
+            checkoutItem.setQuantity(item.quantity);
+            cartItemRepo.save(checkoutItem);
+        }
+
+        return savedOrder;
+    }
+
+    public CheckoutOrder getById(Long id) {
+        return repo.findById(id).orElseThrow(() -> new RuntimeException("Checkout order not found"));
+    }
+
+    public List<CartItem> getItems(Long checkoutId) {
+        return cartItemRepo.findByCheckoutId(checkoutId);
     }
 }

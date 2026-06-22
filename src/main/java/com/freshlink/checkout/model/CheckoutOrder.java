@@ -6,7 +6,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "checkout_order", schema = "freshlink_checkout")
+@Table(name = "checkout_order")
 @Getter @Setter @Builder
 @NoArgsConstructor @AllArgsConstructor
 public class CheckoutOrder {

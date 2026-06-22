@@ -5,15 +5,16 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "cart_item", schema = "freshlink_cart")
+@Table(name = "checkout_item")
 @Getter @Setter
 public class CartItem {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "cart_id")
-    private Long cartId;
+    @Column(name = "checkout_id")
+    private Long checkoutId;
 
     private Long productId;
     private String productName;

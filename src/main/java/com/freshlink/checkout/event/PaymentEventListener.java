@@ -37,10 +37,10 @@ public class PaymentEventListener {
         checkout.setStatus(CheckoutStatus.PAYMENT_SUCCESS);
         checkoutRepo.save(checkout);
 
-        // 1. Create order in Order Service
+        // create order
         orderClient.createOrder(event.getCheckoutId());
 
-        // 2. Reduce stock in Product Service
+        // reduce stock
         productClient.reduceStock(event.getCheckoutId());
     }
 

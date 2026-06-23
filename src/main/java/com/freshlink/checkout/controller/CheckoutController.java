@@ -6,6 +6,8 @@ import com.freshlink.checkout.service.CheckoutService;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.context.ApplicationEventPublisher;
+import com.freshlink.event.payment.PaymentCompletedEvent;
 import com.freshlink.checkout.model.CartItem;
 import java.util.List;
 
@@ -14,9 +16,11 @@ import java.util.List;
 public class CheckoutController {
 
     private final CheckoutService service;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public CheckoutController(CheckoutService service) {
+    public CheckoutController(CheckoutService service, ApplicationEventPublisher eventPublisher) {
         this.service = service;
+        this.eventPublisher = eventPublisher;
     }
 
     @PostMapping
@@ -33,5 +37,17 @@ public class CheckoutController {
     @GetMapping("/{id}/items")
     public List<CartItem> getItems(@PathVariable Long id) {
         return service.getItems(id);
+    }
+
+    @PostMapping("/{id}/confirm")
+    public void confirm(@PathVariable Long id) {
+        CheckoutOrder checkout = service.getById(id);
+        PaymentCompletedEvent event = new PaymentCompletedEvent(
+                0L,
+                id,
+                checkout.getCustomerEmail(),
+                checkout.getPayableAmount()
+        );
+        eventPublisher.publishEvent(event);
     }
 }

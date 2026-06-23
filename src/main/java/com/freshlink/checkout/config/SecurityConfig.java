@@ -2,6 +2,7 @@ package com.freshlink.checkout.config;
 
 import com.freshlink.checkout.security.JwtAuthFilter;
 import org.springframework.context.annotation.*;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.*;
 
@@ -19,6 +20,8 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.GET, "/api/checkout/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/checkout/*/confirm").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(filter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
